@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Seedling Guard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        .chart-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .chart-container {
+            position: relative;
+            margin: 0;
+            padding: 0;
+            height: 400px;
+            width: 32%;
+            text-align: center;
+        }
+        .chart-container p {
+            margin: 0;
+            font-size: 1.1em;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 0;
+        }
+        .temperature-status-container,
+        .moisture-status-container,
+        .tds-status-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+            flex-wrap: nowrap;
+        }
+        .status-box {
+            background: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: auto;
+            font-size: 0.9em;
+            flex: 1;
+            margin: 0 5px;
+            color: #000; /* Black text for all statuses */
+        }
+        /* Temperature status effects */
+        .status-box.cool {
+            background: #cce5ff;
+            border: 1px solid #b8daff;
+        }
+        .status-box.critical {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .status-box.normal {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        /* Soil moisture status effects */
+        .status-box.wet {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .status-box.dry {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        /* TDS status effects */
+        .status-box.low {
+            background: #f8d7da;
+            border: 1px solid #c3e6cb;
+        }
+        .status-box.moderate {
+            background: #d4edda;
+            border: 1px solid #ffeeba;
+        }
+        .status-box.high {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .status-section {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        .general-status-box {
+            text-align: center;
+            margin: 0;
+            font-size: 1.5em;
+            padding: 10px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 45%;
+        }
+        .status-box-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 0;
+            padding: 0;
+        }
+        .status-box-container > div {
+            width: 48%;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Seedling Guard</h1>
+        <div class="chart-row">
+            <div class="chart-container">
+                <canvas id="temperatureChart"></canvas>
+                <div class="temperature-status-container">
+                    <div class="status-box" id="temperature1StatusBox">
+                        <h3>Left</h3>
+                        <p id="temperature1Value">Loading...</p>
+                        <p id="temperature1Status">Status: Loading...</p>
+                    </div>
+                    <div class="status-box" id="temperature2StatusBox">
+                        <h3>Right</h3>
+                        <p id="temperature2Value">Loading...</p>
+                        <p id="temperature2Status">Status: Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="soilMoistureChart"></canvas>
+                <div class="moisture-status-container">
+                    <div class="status-box" id="soilMoisture1StatusBox">
+                        <h3>Left</h3>
+                        <p id="soilMoisture1Value">Loading...</p>
+                        <p id="soilMoisture1Status">Status: Loading...</p>
+                    </div>
+                    <div class="status-box" id="soilMoisture2StatusBox">
+                        <h3>Right</h3>
+                        <p id="soilMoisture2Value">Loading...</p>
+                        <p id="soilMoisture2Status">Status: Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="tdsChart"></canvas>
+                <div class="tds-status-container">
+                    <div class="status-box" id="tdsStatusBox">
+                        <h3>TDS 1</h3>
+                        <p id="tdsValue1">Loading...</p>
+                        <p id="tdsStatus1">Status: Loading...</p>
+                    </div>
+                    <div class="status-box" id="tdsStatusBox2">
+                        <h3>TDS 2</h3>
+                        <p id="tdsValue2">Loading...</p>
+                        <p id="tdsStatus2">Status: Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="status-section">
+            <div class="general-status-box" id="statusLeft">
+                <h3>Status Left</h3>
+                <p id="statusLeftValue">Loading...</p>
+            </div>
+            <div class="general-status-box" id="statusRight">
+                <h3>Status Right</h3>
+                <p id="statusRightValue">Loading...</p>
+            </div>
+        </div>
+        <div class="status-box-container">
+            <div>
+                <h3>Left Blind Status</h3>
+                <p id="leftBlindStatus">Loading...</p>
+            </div>
+            <div>
+                <h3>Right Blind Status</h3>
+                <p id="rightBlindStatus">Loading...</p>
+            </div>
+            <div>
+                <h3>Water Pump Status</h3>
+                <p id="waterPumpStatus">Loading...</p>
+            </div>
+            <div>
+                <h3>Fertilizer Pump Status</h3>
+                <p id="fertilizerPumpStatus">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const fetchSensorData = async () => {
+            try {
+                const response = await fetch('/sensor_data');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                updateCharts(data);
+                updateStatus(data);
+            } catch (error) {
+                console.error('Error fetching sensor data:', error);
+            }
+        };
+	
+        const updateStatus = (data) => {
+            document.getElementById('leftBlindStatus').textContent = data.left_blind_status || 'N/A'; // Updated line
+            document.getElementById('rightBlindStatus').textContent = data.right_blind_status || 'N/A'; // Updated line
+
+            document.getElementById('waterPumpStatus').textContent = data.water_pump_status || 'N/A';
+            document.getElementById('fertilizerPumpStatus').textContent = data.fertilizer_pump_status || 'N/A';
+
+            const temp1Status = getTemperatureStatus(data.temperature1);
+            const temp2Status = getTemperatureStatus(data.temperature2);
+
+            document.getElementById('temperature1Value').textContent = `${data.temperature1?.toFixed(2) ?? 'N/A'} °C`;
+            document.getElementById('temperature2Value').textContent = `${data.temperature2?.toFixed(2) ?? 'N/A'} °C`;
+
+            document.getElementById('soilMoisture1Value').textContent = `${data.soil_moisture_value1?.toFixed(2) ?? 'N/A'} %`;
+            document.getElementById('soilMoisture2Value').textContent = `${data.soil_moisture_value2?.toFixed(2) ?? 'N/A'} %`;
+
+            document.getElementById('tdsValue1').textContent = `TDS 1: ${data.tds_value1?.toFixed(2) ?? 'N/A'} ppm`;
+            document.getElementById('tdsValue2').textContent = `TDS 2: ${data.tds_value2?.toFixed(2) ?? 'N/A'} ppm`;
+
+            document.getElementById('temperature1Status').textContent = temp1Status;
+            document.getElementById('temperature2Status').textContent = temp2Status;
+
+            document.getElementById('soilMoisture1Status').textContent = getSoilMoistureStatus(data.soil_moisture_value1);
+            document.getElementById('soilMoisture2Status').textContent = getSoilMoistureStatus(data.soil_moisture_value2);
+            document.getElementById('tdsStatus1').textContent = getTdsStatus(data.tds_value1);
+            document.getElementById('tdsStatus2').textContent = getTdsStatus(data.tds_value2);
+
+            document.getElementById('statusLeft').textContent = getGeneralStatusLeft(data);
+            document.getElementById('statusRight').textContent = getGeneralStatusRight(data);
+
+            document.querySelector('#temperature1StatusBox').className = `status-box ${temp1Status.toLowerCase()}`;
+            document.querySelector('#temperature2StatusBox').className = `status-box ${temp2Status.toLowerCase()}`;
+            document.querySelector('#soilMoisture1StatusBox').className = `status-box ${getSoilMoistureStatus(data.soil_moisture_value1).toLowerCase()}`;
+            document.querySelector('#soilMoisture2StatusBox').className = `status-box ${getSoilMoistureStatus(data.soil_moisture_value2).toLowerCase()}`;
+            document.querySelector('#tdsStatusBox').className = `status-box ${getTdsStatus(data.tds_value1).toLowerCase()}`;
+            document.querySelector('#tdsStatusBox2').className = `status-box ${getTdsStatus(data.tds_value2).toLowerCase()}`;
+	   
+	    if (temp1Status === 'critical') {
+		document.getElementById('leftBlindStatus').textContent = 'CLosed';
+	    } else if (temp1Status === 'normal') {
+		document.getElementById('leftBlindStatus').textContent = 'Open';
+	    }
+	    
+	    if (temp2Status === 'critical') {
+		document.getElementById('rightBlindStatus').textContent = 'CLosed';
+	    } else if (temp2Status === 'normal') {
+		document.getElementById('rightBlindStatus').textContent = 'Open';
+	    }
+        };
+
+
+        const updateCharts = (data) => {
+            const time = new Date().toLocaleTimeString();
+
+            if (temperatureChart.data.labels.length > 10) {
+                temperatureChart.data.labels.shift();
+                temperatureChart.data.datasets[0].data.shift();
+                temperatureChart.data.datasets[1].data.shift();
+            }
+            if (soilMoistureChart.data.labels.length > 10) {
+                soilMoistureChart.data.labels.shift();
+                soilMoistureChart.data.datasets[0].data.shift();
+                soilMoistureChart.data.datasets[1].data.shift();
+            }
+            if (tdsChart.data.labels.length > 10) {
+                tdsChart.data.labels.shift();
+                tdsChart.data.datasets[0].data.shift();
+                tdsChart.data.datasets[1].data.shift();
+            }
+
+            temperatureChart.data.labels.push(time);
+            temperatureChart.data.datasets[0].data.push(data.temperature1);
+            temperatureChart.data.datasets[1].data.push(data.temperature2);
+            temperatureChart.update();
+
+            soilMoistureChart.data.labels.push(time);
+            soilMoistureChart.data.datasets[0].data.push(data.soil_moisture_value1);
+            soilMoistureChart.data.datasets[1].data.push(data.soil_moisture_value2);
+            soilMoistureChart.update();
+
+            tdsChart.data.labels.push(time);
+            tdsChart.data.datasets[0].data.push(data.tds_value1);
+            tdsChart.data.datasets[1].data.push(data.tds_value2);
+            tdsChart.update();
+        };
+
+        const createChart = (ctx, label, datasets) => {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: datasets
+                },
+                options: {
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Time'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: label
+                            }
+                        }
+                    }
+                }
+            });
+        };
+
+        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        const soilMoistureCtx = document.getElementById('soilMoistureChart').getContext('2d');
+        const tdsCtx = document.getElementById('tdsChart').getContext('2d');
+
+        const temperatureChart = createChart(temperatureCtx, 'Temperature (°C)', [
+            {
+                label: 'Temperature Left',
+                data: [],
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            },
+            {
+                label: 'Temperature Right',
+                data: [],
+                borderColor: 'red',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            }
+        ]);
+        const soilMoistureChart = createChart(soilMoistureCtx, 'Soil Moisture (%)', [
+            {
+                label: 'Soil Moisture Left',
+                data: [],
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            },
+            {
+                label: 'Soil Moisture Right',
+                data: [],
+                borderColor: 'red',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            }
+        ]);
+        const tdsChart = createChart(tdsCtx, 'TDS (ppm)', [
+            {
+                label: 'TDS 1',
+                data: [],
+                borderColor: 'blue',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            },
+            {
+                label: 'TDS 2',
+                data: [],
+                borderColor: 'red',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1
+            }
+        ]);
+
+        const getTemperatureStatus = (temp) => {
+            if (temp < 20) return 'cool';
+            if (temp > 30) return 'critical';
+            return 'normal';
+        };
+
+        const getSoilMoistureStatus = (moisture) => {
+            if (moisture > 5) return 'DRY';
+            return 'WET';
+        };
+
+        const getTdsStatus = (tds) => {
+            if (tds < 300) return 'low';
+            if (tds <= 800) return 'moderate';
+            return 'high';
+        };
+
+	const getGeneralStatusLeft = (data) => {
+    	    const tempOptimal = data.temperature1 >= 20 && data.temperature1 <= 30;
+    	    const soilMoistureOptimal = data.soil_moisture_value1 <= 5;
+    	    const salinityOptimal = data.tds_value1 >= 300 && data.tds_value1 <= 800;
+
+    	    if (tempOptimal && soilMoistureOptimal && salinityOptimal) {
+            	return 'Optimal';
+    	    } else if (data.temperature1 > 30 || data.soil_moisture_value1 > 5 || data.tds_value1 < 300 || data.tds_value1 > 800) {
+        	return 'Suboptimal';
+    	    } else {
+        	return 'Normal';
+    	    }
+	};
+
+	const getGeneralStatusRight = (data) => {
+    	    const tempOptimal = data.temperature2 >= 20 && data.temperature2 <= 30;
+    	    const soilMoistureOptimal = data.soil_moisture_value2 <= 5;
+    	    const salinityOptimal = data.tds_value2 >= 300 && data.tds_value2 <= 800;
+
+    	    if (tempOptimal && soilMoistureOptimal && salinityOptimal) {
+        	return 'Optimal';
+    	    } else if (data.temperature2 > 30 || data.soil_moisture_value2 > 5 || data.tds_value2 < 300 || data.tds_value2 > 800) {
+        	return 'Suboptimal';
+    	    } else {
+       		return 'Normal';
+    	    }
+	};
+
+
+        setInterval(fetchSensorData, 500);
+    </script>
+</body>
+</html>
